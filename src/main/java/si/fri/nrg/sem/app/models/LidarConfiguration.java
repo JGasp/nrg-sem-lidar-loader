@@ -17,12 +17,15 @@ public class LidarConfiguration {
     public String outputFolder;
     public LoadFiles loadFiles;
 
+    public float gridThinSize;
+
 
     public LidarConfiguration() {
     }
 
     public LidarConfiguration(CmdOptions options) {
         outputFolder = options.outputFolder;
+        gridThinSize = options.gridThinSize;
 
         if(options.loadRange != null){
             loadFiles = new LoadRange(options.loadRange);

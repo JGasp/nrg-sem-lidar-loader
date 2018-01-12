@@ -43,9 +43,10 @@ public class LidarReshaper {
     }
 
     private String[] buildCommand(Path downloadFilePath,  Path reshapeFilePath) {
+        String gridThinSize =  String.format("%f", configuration.gridThinSize);
         return new String[] {
                 "C:\\PointCloud\\Programs\\LAStools\\bin\\lasmerge.exe",
-                "-thin_with_grid", "2",
+                "-thin_with_grid", gridThinSize,
                 "-i", downloadFilePath.toString().replace("/", "\\"),
                 "-o", reshapeFilePath.toString().replace("/", "\\")
         };
