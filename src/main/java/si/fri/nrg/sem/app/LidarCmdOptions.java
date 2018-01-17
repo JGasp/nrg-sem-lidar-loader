@@ -4,7 +4,7 @@ import org.kohsuke.args4j.Option;
 
 public class LidarCmdOptions {
 
-    @Option(name="-d", usage="Directory where files will be saved to")
+    @Option(name="-o", usage="Directory where files will be saved to")
     public String outputDirectory;
 
     @Option(name="-r", usage="Load range in format <block:xFrom:xTo:yFrom:yTo>")

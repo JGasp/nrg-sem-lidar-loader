@@ -1,7 +1,15 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "2.0.1"
+}
+apply plugin: 'application'
+apply plugin: 'java'
+
+
 group 'si.fri.nrg.sem'
 version '1.0-SNAPSHOT'
 
-apply plugin: 'java'
+mainClassName = 'si.fri.nrg.sem.Main'
+shadowJar.archiveName = 'LidarLoader.jar'
 
 sourceCompatibility = 1.8
 

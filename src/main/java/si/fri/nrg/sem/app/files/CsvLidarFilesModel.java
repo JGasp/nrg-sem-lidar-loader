@@ -2,6 +2,7 @@ package si.fri.nrg.sem.app.files;
 
 import si.fri.nrg.sem.app.files.base.LidarFilesModel;
 import si.fri.nrg.sem.app.files.model.LidarFile;
+import si.fri.nrg.sem.utility.LidarLog;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -13,7 +14,7 @@ import java.util.List;
 
 public class CsvLidarFilesModel extends LidarFilesModel {
 
-    private static String FILE_NAME = "files.csv";
+    private static String FILE_NAME = "lidarFiles.csv";
 
     private int currIndex = 0;
     private List<LidarFile> files = new ArrayList<>();
@@ -44,6 +45,8 @@ public class CsvLidarFilesModel extends LidarFilesModel {
             } catch(IOException e) {
                 e.printStackTrace();
             }
+        } else {
+            LidarLog.log("Missing file: lidarFiles.csv");
         }
     }
 

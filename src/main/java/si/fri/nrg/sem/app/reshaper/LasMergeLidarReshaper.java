@@ -17,7 +17,7 @@ public class LasMergeLidarReshaper extends LidarReshaper {
     }
 
     private Path buildDestination(String fileName) {
-        String outputFileName = String.format("th-%01f-%s", app.options.gridThinSize, fileName);
+        String outputFileName = String.format("th-%.1f-%s", app.options.gridThinSize, fileName);
         return Paths.get(app.options.outputDirectory, outputFileName);
     }
 
@@ -25,7 +25,7 @@ public class LasMergeLidarReshaper extends LidarReshaper {
     public void processFile(Path source) {
         try {
             String fileName = source.getFileName().toString();
-            LidarLog.log(String.format("Starting reshaping file: %s", fileName));
+            LidarLog.log(String.format("Starting reshaping file: %s", source.toString()));
 
             Path destination = buildDestination(fileName);
 
@@ -46,13 +46,15 @@ public class LasMergeLidarReshaper extends LidarReshaper {
         }
     }
 
-    private String[] buildCommand(Path downloadFilePath,  Path reshapeFilePath) {
-        String gridThinSize =  String.format("%f", app.options.gridThinSize);
+    private String[] buildCommand(Path source, Path dest) {
+        String gridThinSize =  String.format("%.3f", app.options.gridThinSize);
+        Path lasmergeBin = Paths.get(app.lasToolsBinaryPath, "lasmerge");
+
         return new String[] {
-                "C:\\PointCloud\\Programs\\LAStools\\bin\\lasmerge.exe",
+                lasmergeBin.toString().replace("/", "\\"),
                 "-thin_with_grid", gridThinSize,
-                "-i", downloadFilePath.toString().replace("/", "\\"),
-                "-o", reshapeFilePath.toString().replace("/", "\\")
+                "-i", source.toString().replace("/", "\\"),
+                "-o", dest.toString().replace("/", "\\")
         };
     }
 

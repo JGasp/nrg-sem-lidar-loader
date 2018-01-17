@@ -17,14 +17,19 @@ import java.nio.file.Path;
 
 public class LidarApp {
 
+    public String lasToolsBinaryPath;
+
     public LidarCmdOptions options;
 
     public LidarFilesModel filesModel;
     public LasMergeLidarReshaper reshaper;
     public LidarLoader loader;
 
+
+
     public LidarApp(LidarCmdOptions options) {
         this.options = options;
+        this.lasToolsBinaryPath = System.getenv("LAS_TOOLS_HOME");
 
         init();
     }
@@ -70,8 +75,10 @@ public class LidarApp {
 
         Path preparedFile = loader.prepareFile(lidarFile);
 
-        if(Files.exists(preparedFile)){
+        if(preparedFile != null && Files.exists(preparedFile)) {
             reshaper.processFile(preparedFile);
+        } else {
+            LidarLog.log("Missing file: " + preparedFile.toString());
         }
     }
 

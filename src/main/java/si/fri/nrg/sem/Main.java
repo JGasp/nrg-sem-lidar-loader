@@ -14,11 +14,20 @@ public class Main {
             CmdLineParser parser = new CmdLineParser(options);
             parser.parseArgument(args);
 
+            checkOptions(options);
+
             LidarApp app = new LidarApp(options);
             app.start();
 
         } catch (CmdLineException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void checkOptions(LidarCmdOptions options){
+        if(options.outputDirectory == null) {
+            System.out.println("No output directory specified");
+            System.exit(0);
         }
     }
 
