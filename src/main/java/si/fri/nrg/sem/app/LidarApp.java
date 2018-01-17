@@ -1,76 +1,88 @@
 package si.fri.nrg.sem.app;
 
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import si.fri.nrg.sem.app.loader.LidarLoader;
-import si.fri.nrg.sem.app.models.LidarConfiguration;
-import si.fri.nrg.sem.app.models.files.LoadCsv;
-import si.fri.nrg.sem.app.reshaper.LidarReshaper;
+import si.fri.nrg.sem.app.files.CsvLidarFilesModel;
+import si.fri.nrg.sem.app.files.RangeLidarFilesModel;
+import si.fri.nrg.sem.app.files.base.LidarFilesModel;
+import si.fri.nrg.sem.app.files.model.LidarFile;
+import si.fri.nrg.sem.app.loader.LocalLidarLoader;
+import si.fri.nrg.sem.app.loader.OnlineLidarLoader;
+import si.fri.nrg.sem.app.loader.base.LidarLoader;
+import si.fri.nrg.sem.app.reshaper.LasMergeLidarReshaper;
+import si.fri.nrg.sem.utility.LidarLog;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 
 public class LidarApp {
 
-    private static SimpleDateFormat logSdf = new SimpleDateFormat("hh:MM:ss");
+    public LidarCmdOptions options;
 
-    private LidarConfiguration configuration;
+    public LidarFilesModel filesModel;
+    public LasMergeLidarReshaper reshaper;
+    public LidarLoader loader;
 
+    public LidarApp(LidarCmdOptions options) {
+        this.options = options;
 
-    public LidarApp(String[] args) {
-        initConfig(args);
+        init();
     }
 
-    private void initConfig(String[] args) {
-        try {
-            configuration = LidarConfiguration.init();
+    public void init(){
+        initLidarFilesModel();
+        initLidarLoader();
+        initReshaper();
+    }
 
-            if(configuration == null){
-                configuration = initCmdArguments(args);
-            }
-
-            LoadCsv loadCsv =  LoadCsv.init();
-            if(loadCsv != null){
-                configuration.loadFiles = loadCsv;
-            }
-        } catch(CmdLineException | IOException e ) {
-            e.printStackTrace();
-            System.exit(0);
+    public void initLidarFilesModel(){
+        if(options.loadRange != null){
+            filesModel = new RangeLidarFilesModel(options.loadRange);
+        } else {
+            filesModel = new CsvLidarFilesModel();
         }
     }
 
-    private LidarConfiguration initCmdArguments(String[] args) throws CmdLineException {
-        CmdOptions options = new CmdOptions();
-        CmdLineParser parser = new CmdLineParser(options);
-        parser.parseArgument(args);
-        return new LidarConfiguration(options);
-    }
-
-    public void start(){
-        LidarLoader lidarLoader = new LidarLoader(configuration);
-        lidarLoader.setLidarReshaper(new LidarReshaper(configuration));
-
-        lidarLoader.load();
-    }
-
-    public static void printProcessOutput(Process proc) {
-        try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
-            String line;
-            while((line = br.readLine()) != null) {
-                System.out.println(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void initLidarLoader(){
+        if(options.inputDirectory != null){
+            loader = new LocalLidarLoader(this);
+        } else {
+            loader = new OnlineLidarLoader(this);
         }
     }
 
-    public static void log(String message) {
-        System.out.printf("[%s] %s\n", logSdf.format(new Date()), message);
+    public void initReshaper(){
+        reshaper = new LasMergeLidarReshaper(this);
+    }
+
+    public void start() {
+        if(filesModel != null){
+            LidarFile lidarFile;
+            while((lidarFile = filesModel.getNextFile()) != null){
+                processFile(lidarFile);
+            }
+        } else {
+            LidarLog.log("No files to process.");
+        }
+    }
+
+    public void processFile(LidarFile lidarFile) {
+
+        Path preparedFile = loader.prepareFile(lidarFile);
+
+        if(Files.exists(preparedFile)){
+            reshaper.processFile(preparedFile);
+        }
+    }
+
+    public void cleanUpFiles(Path preparedFile) {
+        if(loader instanceof OnlineLidarLoader){
+            try {
+                Files.deleteIfExists(preparedFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }
